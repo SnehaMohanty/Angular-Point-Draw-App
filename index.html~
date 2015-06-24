@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Angular Drawing App</title>
+ <meta charset="UTF-8"> 
+
+<link rel="stylesheet" href="bootstrap.min.css">
+<script src="angular1.js"></script>
+<style>
+
+body {
+  padding: 1em 0;
+}
+label {
+  min-width: 6em;
+} 
+input[type="range"] {
+  width: 50%;
+}
+</style>
+
+</head>
+<body>
+<div style="margin: 10px" ng-app="myApp">
+  <div ng-controller="CanvasCtrl">
+    <h1>Point Draw App</h1>     
+    <form ng-submit="addData()">
+      <input ng-model="x"  size="2" placeholder="X" type="number" min="0" max="600" required>
+      <input ng-model="y"  size="2" placeholder="Y" type="number" min="0" max="400" required>
+     
+      <input class="btn-primary" type="submit" value="Add point">
+    </form>
+    <canvas id="canvas" style="border: 1px gray solid; float: left"></canvas>
+    <div id="list" style="margin-left: 620px; float: left">
+        Click[X] to remove
+        <ul>
+            <li ng-repeat="point in data">
+                [{{point.x}}, {{point.y}}] <a ng-click="removePoint(point)">[x]</a>
+            </li>
+        </ul>
+    </div>
+<label class="md-only" for="st">Stroke</label>
+		<input type="color" ng-model="st" id="st" >{{st}}
+<br />
+		<label class="md-only" for="stw">Stroke width</label>
+		<input type="range" ng-model="stw" min="1" max="30" id="stw" >{{stw}}
+  
+</div>
+<script>
+var counter = 0;
+
+var myApp = angular.module('myApp',[]);
+myApp.controller('CanvasCtrl',function($scope,$interval){
+
+    var canvas = document.getElementById('canvas');
+    var context = canvas.getContext('2d');
+    
+    $scope.data = [
+       
+    ];
+	
+    $scope.addData = function() {
+        var id = 0;
+        if($scope.data.length > 0) {
+            id = $scope.data[$scope.data.length-1].id + 1;
+        }
+        var p = {id: id, x: $scope.x, y: $scope.y};
+        $scope.data.push(p);
+        $scope.x = '';
+        $scope.y = '';
+      
+        draw($scope.data);
+	  console.log(point);
+    };
+    
+    $scope.removePoint = function(point) {
+        console.log(point);
+        for(var i=0; i<$scope.data.length; i++) {
+            if($scope.data[i].id === point.id) {
+                console.log("removing item at position: "+i);
+                $scope.data.splice(i, 1);    
+            }
+        }
+        
+        context.clearRect(0,0,600,400);
+        draw($scope.data);
+        console.log($scope.data);
+    }
+    
+    function draw(data,stw,st) {
+        for(var i=0; i<data.length; i++) {
+            
+            if(i > 0) {
+                drawLine(data[i], data[i-1]);
+            }
+        }
+    }
+    
+   
+    
+    function drawLine(data1, data2) {
+        context.beginPath();
+        context.moveTo(data1.x, data1.y);
+        context.lineTo(data2.x, data2.y);
+	context.lineCap="round";
+       context.strokeStyle = window.st;
+	context.lineWidth = window.stw;
+        context.stroke();
+    }
+
+	$scope.stw = 15;
+	
+	$scope.st = '#172f21';
+    
+
+$scope.$watchCollection ("[data,stw, st]", function( newValue, oldValue ) {
+    window.st = $scope.st;
+    window.stw = $scope.stw;
+    draw($scope.data);
+  }); 
+
+  window.st = $scope.st;
+  window.stw = $scope.stw; 
+
+	
+    
+    canvas.width = 600;
+    canvas.height = 400;
+    context.globalAlpha = 1.0;
+    context.beginPath();
+     
+
+
+});
+</script>
+</body>
+</html>
